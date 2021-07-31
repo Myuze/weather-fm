@@ -1,0 +1,22 @@
+:root {
+  --font-teko: 'Teko', sans-serif;
+  --bg-default: black;
+  --txt-default: cyan;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-default);
+  color: var(--txt-default);
+}
+
+header h1 {
+  font-family: var(--font-teko);
+  text-align: center;
+}
+
