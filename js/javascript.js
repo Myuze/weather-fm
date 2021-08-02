@@ -18,19 +18,38 @@ var openWeatherApi = {
       lon: 0,
       exclude: ""
     },
-    data = {}
-  },
+    data: {},
 
-  
-
+    getFiveDayForecast: function() {
+      // Parse Forcast Data per Card
+    }
+  }
 }
 
-var cityName = "Sacramento"
-var baseUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}`
-var data = apiCall(baseUrl).then(data => {
+const searchColEl = $('#search-column');
+const cityInputEl = $('#city-input')
+const searchBtnEl = $('#search-btn');
+const cityBtnsEl = $('#city-btns');
+const oneCallObject = openWeatherApi.oneCall;
 
-  console.log(data)
-});
+console.log('oneCallObject.data: ', oneCallObject.data)
+
+searchBtnEl.on('click', function(event) {
+  var cityName = cityInputEl.val()
+  var baseUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}`
+  let newListItem = $('<li>').addClass('list-group-item');
+
+  if (cityInputEl.val().replace(/\s+/g, '') != "") {
+    newListItem.text(cityInputEl.val());
+    cityBtnsEl.prepend(newListItem);
+
+    apiCall(baseUrl).then(data => {
+      oneCallObject.data = data;
+      console.log(data)
+    });
+  }
+
+})
 
 // Function to create API call using fetch
 async function apiCall(baseUrl, params = {}) {

@@ -18,8 +18,11 @@
     </header>
     <div class="container-fluid">
         <div class="row">
-            <div id="search-column" class="min-vh-100 col-3 bg-secondary">
-                Search Column
+            <div id="search-column" class="d-flex flex-column min-vh-100 col-3 bg-secondary">
+                <h3 class="m-0 pb-2 text-center">Search for a City:</h3>
+                <input id="city-input" class="m-0 mb-2" placeholder="City">
+                <button id="search-btn" type="button" class="btn btn-primary btn-lg">Search</button>
+                <div id="city-btns" class="mt-2 list-group"></div>
             </div>
             <div id="weather-info-container" class="min-vh-100 col-9 bg-light">
                 Weather Info Container
