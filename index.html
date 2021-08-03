@@ -20,14 +20,66 @@
         <div class="row">
             <div id="search-column" class="d-flex flex-column min-vh-100 col-3 bg-secondary">
                 <h3 class="m-0 pb-2 text-center">Search for a City:</h3>
-                <input id="city-input" class="m-0 mb-2" placeholder="City">
+                <input id="city-input" class="m-0 mb-2" placeholder="Enter City">
                 <button id="search-btn" type="button" class="btn btn-primary btn-lg">Search</button>
                 <div id="city-btns" class="mt-2 list-group"></div>
             </div>
             <div id="weather-info-container" class="min-vh-100 col-9 bg-light">
-                Weather Info Container
-                <div id="city-container">City Container</div>
-                <div id="forecast-container">Forecast Container</div>
+                <h2 class="text-center"></h3>
+                <div id="city-container" class="mb-3 p-3 border border-1 border-dark">
+                    <h2 id="city-current-weather">City Container</h2>
+                    <p id="current-temp">Temp</p>
+                    <p id="current-wind">Wind</p>
+                    <p id="current-humidity">Humidty</p>
+                    <p id="current-uv-index">UV index</p>
+                </div>
+                <div id="forecast-container" class="card-group row">
+                    <h2 class="text-center">5-Day Forecast</h2>
+                    <div class="h-100 forecast-card-1 card m-2 border border-1 border-dark" style="width: 10rem;">
+                        <h3 class="forecast-date">3/31/2021</h3>
+                        <p class="card-weather-icon">☁</p>
+                        <p class="card-temp">Temp</p>
+                        <p class="card-wind">Wind</p>
+                        <p class="card-humidity">Humidity</p>
+                    </div>
+                    <div class="h-100 forecast-card-1 card m-2 border border-1 border-dark" style="width: 10rem;">
+                        <h3 class="forecast-date">3/31/2021</h3>
+                        <p class="card-weather-icon">☁</p>
+                        <p class="card-temp">Temp</p>
+                        <p class="card-wind">Wind</p>
+                        <p class="card-humidity">Humidity</p>
+                    </div>
+                    <div class="h-100 forecast-card-1 card m-2 border border-1 border-dark" style="width: 10rem;">
+                        <h3 class="forecast-date">3/31/2021</h3>
+                        <p class="card-weather-icon">☁</p>
+                        <p class="card-temp">Temp</p>
+                        <p class="card-wind">Wind</p>
+                        <p class="card-humidity">Humidity</p>
+                    </div>
+                    <div class="h-100 forecast-card-1 card m-2 border border-1 border-dark" style="width: 10rem;">
+                        <h3 class="forecast-date">3/31/2021</h3>
+                        <p class="card-weather-icon">☁</p>
+                        <p class="card-temp">Temp</p>
+                        <p class="card-wind">Wind</p>
+                        <p class="card-humidity">Humidity</p>
+                    </div>
+                    <div class="h-100 forecast-card-1 card m-2 border border-1 border-dark" style="width: 10rem;">
+                        <h3 class="forecast-date">3/31/2021</h3>
+                        <p class="card-weather-icon">☁</p>
+                        <p class="card-temp">Temp</p>
+                        <p class="card-wind">Wind</p>
+                        <p class="card-humidity">Humidity</p>
+                    </div>
+                    <!-- <div class="h-100 forecast-card-2 card m-2 border border-1 border-dark" style="width: 10rem;">Test Card INfo
+                    </div>
+                    <div class="h-100 forecast-card-3 card m-2 border border-1 border-dark" style="width: 10rem;">Test Card INfo
+                    </div>
+                    <div class="h-100 forecast-card-4 card m-2 border border-1 border-dark" style="width: 10rem;">Test Card INfo
+                    </div>
+                    <div class="h-100 forecast-card-5 card m-2 border border-1 border-dark" style="width: 10rem;">Test Card INfo
+                    </div> -->
+
+                </div>
             </div>
         </div>
     </div>
