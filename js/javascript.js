@@ -37,7 +37,7 @@ const openWeatherApi = {
     params: {
       q: 'cityName',
     },
-    data: {},
+    data: {}
   },
 
   // One Call API Request
@@ -47,7 +47,7 @@ const openWeatherApi = {
       lat: 0,
       lon: 0,
     },
-    data: {},
+    data: {}
   },
 
   createRequestUrl: function(openWeatherRequestObject) {
@@ -74,25 +74,30 @@ const openWeatherApi = {
     return requestUrl;
   },
 
-  getData: function(openWeatherRequestUrl) {
-
+  getRequestData: function(openWeatherRequestObject) {
+    let requestUrl = openWeatherApi.createRequestUrl(openWeatherRequestObject);
+    
+    apiCall(requestUrl).then(data => {
+      openWeatherRequestObject.data = data;
+    });
   }
 }
 
 // Make OpenWeather API call when search button pressed
 searchBtnEl.on('click', function(event) {
-  var cityName = cityInputEl.val()
-  var baseUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}`
   let newListItem = $('<li>').addClass('list-group-item text-center');
   
   if (cityInputEl.val().replace(/\s+/g, '') != "") {
+    // Create searched city button and clear field
     newListItem.text(cityInputEl.val());
     cityBtnsEl.prepend(newListItem);
     
-    apiCall(baseUrl).then(data => {
-      oneCallObject.data = data;
-      console.log(data)
-    });
+    // Create a city weather request
+    let request = openWeatherApi.currentWeatherRequest;
+    request.params.q = cityInputEl.val();
+    console.log('click:request', request)    
+    openWeatherApi.getRequestData(request);
+    cityInputEl.val("")
   }
 })
 
@@ -121,6 +126,12 @@ async function apiCall(baseUrl, params = {}) {
   }
 }
 
+// Set Current location, or default location if geolocation unavailable
+function displayCurrentWeather() {
+  // TODO: Add logic to fill out City Container
+  // TODO: Add logic to fill out 5-Day Forecast cards
+}
+
 // Geolocation functions
 function geolocationSuccess(position) {
   user.lat = position.coords.latitude;
@@ -130,11 +141,7 @@ function geolocationSuccess(position) {
   request.params.lat = user.lat;
   request.params.lon = user.lon;
 
-  var requestUrl = openWeatherApi.createRequestUrl(request);
-
-  apiCall(requestUrl).then(data => {
-    request.data = data;
-  });
+  openWeatherApi.getRequestData(request);
 }
 
 function geolocationError() {
