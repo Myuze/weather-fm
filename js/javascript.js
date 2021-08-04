@@ -83,23 +83,35 @@ const openWeatherApi = {
   }
 }
 
+// Create a city weather request
+function createCityRequest(city) {
+  console.log(city)
+  let request = openWeatherApi.currentWeatherRequest;
+  request.params.q = city;
+  console.log('click:request', request)    
+  openWeatherApi.getRequestData(request);
+}
+
+
 // Make OpenWeather API call when search button pressed
-searchBtnEl.on('click', function(event) {
+searchBtnEl.on('click', function() {
   let newListItem = $('<li>').addClass('list-group-item text-center');
   
   if (cityInputEl.val().replace(/\s+/g, '') != "") {
     // Create searched city button and clear field
     newListItem.text(cityInputEl.val());
     cityBtnsEl.prepend(newListItem);
-    
-    // Create a city weather request
-    let request = openWeatherApi.currentWeatherRequest;
-    request.params.q = cityInputEl.val();
-    console.log('click:request', request)    
-    openWeatherApi.getRequestData(request);
-    cityInputEl.val("")
+
+    createCityRequest(cityInputEl.val());
+
+    cityInputEl.val("");
   }
 })
+
+// Add listener to new city button list
+cityBtnsEl.on('click', function(event) {
+  createCityRequest($(event.target).text());
+});
 
 // Function to create API call using fetch
 async function apiCall(baseUrl, params = {}) {
@@ -127,8 +139,19 @@ async function apiCall(baseUrl, params = {}) {
 }
 
 // Modal Functions
-var myModal = new bootstrap.Modal(document.getElementById('myModal'))
-console.log(myModal)
+const currentBtn = $('#current-btn');
+
+currentBtn.on('click', function(event) {
+  
+  // Check if the user allows finding location to get current weather
+  if(!navigator.geolocation) {
+    // Default Location
+    console.log('Geolocation is not supported by your browser.')
+  } else {
+    // Use user's current location
+    navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
+  }
+})
 
 // Set Current location, or default location if geolocation unavailable
 function displayCurrentWeather(data) {
@@ -146,6 +169,11 @@ function geolocationSuccess(position) {
   request.params.lat = user.lat;
   request.params.lon = user.lon;
 
+  $('#modal-txt').text(`Lat: ${user.lat}, Lon: ${user.lon}`)
+
+  var myModal = new bootstrap.Modal(document.getElementById('myModal'))
+  myModal.toggle()
+
   openWeatherApi.getRequestData(request);
 }
 
@@ -154,13 +182,4 @@ function geolocationError() {
 }
 
 // Main
-// Check if the user allows finding location to get current weather
-if(!navigator.geolocation) {
-  // Default Location
-  console.log('Geolocation is not supported by your browser.')
-} else {
-  // Use user's current location
-  navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
-}
-
 displayCurrentWeather(openWeatherApi.oneCallRequest.data);
