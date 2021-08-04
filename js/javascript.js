@@ -36,6 +36,7 @@ const openWeatherApi = {
     urlSegment: 'weather',
     params: {
       q: 'cityName',
+      units: 'imperial'
     },
     data: {}
   },
@@ -46,6 +47,16 @@ const openWeatherApi = {
     params: {
       lat: 0,
       lon: 0,
+      units: 'imperial'
+    },
+    data: {}
+  },
+
+  forecastRequest: {
+    urlSegment: 'forecast',
+    params: {
+      q: 'cityName',
+      units: 'imperial'
     },
     data: {}
   },
@@ -83,19 +94,31 @@ const openWeatherApi = {
   }
 }
 
+// City Container Elements
+const currentCityEl = $('#city-current-weather');
+const currentTempEl = $('#current-temp');
+const currentWindEl = $('#current-wind');
+const currentHumidityEl = $('#current-humidity');
+const currentUvindexEl = $('#current-uv-index');
+
 // Fill city container info
-function fillCityContainerInfo() {
+function fillCityContainerInfo(cityData) {
   // TODO: Fill city container info
+  console.log('cityData: ', cityData)
+  currentCityEl.text(cityData.name);
+  currentTempEl.text('Temp: ' + cityData.main.temp + '°F');
+  currentWindEl.text('Wind: ' + cityData.wind.speed + 'mph');
+  currentHumidityEl.text('Humidity: ' + cityData.main.humidity + '%');
+  currentUvindexEl.text('UV Index: ' + cityData.main.temp);
+  
   console.log('CITY INFO FILLED');
 }
 
 // Create a city weather request
-function createCityRequest(city) {
-  console.log(city)
-  let request = openWeatherApi.currentWeatherRequest;
-  request.params.q = city;
-  console.log('click:request', request)    
+function createCityRequest(request) {  
   openWeatherApi.getRequestData(request);
+
+  return request;
 }
 
 // Add listener to new city button list
@@ -105,15 +128,28 @@ cityBtnsEl.on('click', function(event) {
 
 // Make OpenWeather API call when search button pressed
 searchBtnEl.on('click', function() {
-  let newListItem = $('<li>').addClass('list-group-item text-center');
-  
+  let newListItem = $('<li>').addClass('list-group-item list-group-item-action text-center');
+  let request = openWeatherApi.forecastRequest;
+  request.params.q = cityInputEl.val();
+
   if (cityInputEl.val().replace(/\s+/g, '') != "") {
     // Create searched city button and clear field
     newListItem.text(cityInputEl.val());
-    cityBtnsEl.prepend(newListItem);
+    
+    // createCityRequest(cityInputEl.val());
+    openWeatherApi.getRequestData(request);
 
-    createCityRequest(cityInputEl.val());
-    fillCityContainerInfo();
+    console.log('cod', request.data.cod)
+    
+    if (request.data.cod === 404) {
+      cityInputEl.attr('placeholder', 'City Does Not Exist!')
+    } else if (request.data.cod == 200) {
+      cityBtnsEl.prepend(newListItem);
+    } else {
+      return;
+    }
+
+    fillCityContainerInfo(request.data);
 
     cityInputEl.val("");
   }
@@ -160,7 +196,7 @@ currentBtn.on('click', function(event) {
 })
 
 // Set Current location, or default location if geolocation unavailable
-function displayCurrentWeather(data) {
+function displayCurrentForecast(data) {
   // TODO: Add logic to fill out City Container
   // TODO: Add logic to fill out 5-Day Forecast cards
   console.log(data)
@@ -193,4 +229,4 @@ function geolocationError() {
 }
 
 // Main
-displayCurrentWeather(openWeatherApi.oneCallRequest.data);
+displayCurrentForecast(openWeatherApi.oneCallRequest.data);
