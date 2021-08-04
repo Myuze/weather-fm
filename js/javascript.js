@@ -83,6 +83,12 @@ const openWeatherApi = {
   }
 }
 
+// Fill city container info
+function fillCityContainerInfo() {
+  // TODO: Fill city container info
+  console.log('CITY INFO FILLED');
+}
+
 // Create a city weather request
 function createCityRequest(city) {
   console.log(city)
@@ -92,6 +98,10 @@ function createCityRequest(city) {
   openWeatherApi.getRequestData(request);
 }
 
+// Add listener to new city button list
+cityBtnsEl.on('click', function(event) {
+  createCityRequest($(event.target).text());
+});
 
 // Make OpenWeather API call when search button pressed
 searchBtnEl.on('click', function() {
@@ -103,15 +113,11 @@ searchBtnEl.on('click', function() {
     cityBtnsEl.prepend(newListItem);
 
     createCityRequest(cityInputEl.val());
+    fillCityContainerInfo();
 
     cityInputEl.val("");
   }
 })
-
-// Add listener to new city button list
-cityBtnsEl.on('click', function(event) {
-  createCityRequest($(event.target).text());
-});
 
 // Function to create API call using fetch
 async function apiCall(baseUrl, params = {}) {
@@ -168,11 +174,16 @@ function geolocationSuccess(position) {
   let request = openWeatherApi.oneCallRequest;
   request.params.lat = user.lat;
   request.params.lon = user.lon;
-
+  
+  var myModal = new bootstrap.Modal(document.getElementById('myModal'))
+  myModal.show()
+  
   $('#modal-txt').text(`Lat: ${user.lat}, Lon: ${user.lon}`)
 
-  var myModal = new bootstrap.Modal(document.getElementById('myModal'))
-  myModal.toggle()
+  var myModalEl = document.getElementById('myModal')
+  myModalEl.addEventListener('hidden.bs.modal', function (event) {
+    myModal.hide()
+  })
 
   openWeatherApi.getRequestData(request);
 }
