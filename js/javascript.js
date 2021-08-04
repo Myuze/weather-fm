@@ -126,10 +126,15 @@ async function apiCall(baseUrl, params = {}) {
   }
 }
 
+// Modal Functions
+var myModal = new bootstrap.Modal(document.getElementById('myModal'))
+console.log(myModal)
+
 // Set Current location, or default location if geolocation unavailable
-function displayCurrentWeather() {
+function displayCurrentWeather(data) {
   // TODO: Add logic to fill out City Container
   // TODO: Add logic to fill out 5-Day Forecast cards
+  console.log(data)
 }
 
 // Geolocation functions
@@ -158,4 +163,4 @@ if(!navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
 }
 
-console.log(openWeatherApi.oneCallRequest)
+displayCurrentWeather(openWeatherApi.oneCallRequest.data);
