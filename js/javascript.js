@@ -8,24 +8,25 @@ const searchBtnEl = $('#search-btn');
 const cityBtnsEl = $('#city-btns');
 
 // User Object
-var user = {
-  lastCitySearched: "",
-  lat: 0,
-  lon: 0,
-  searchedCities: [],
+function User(userName = 'default') {
+  this.name = userName,
+  this.lastCitySearched = "",
+  this.lat = 0,
+  this.lon = 0,
+  this.searchedCities = [],
 
-  save: function() {
-    // Save user city and saved searched cities to localStorage
+  this.save = function() {
+    // Save User city and saved searched cities to localStorage
     console.log(this)
     localStorage.setItem('user', JSON.stringify(this));
   },
 
-  load: function() {
-    // Load user city and searched cities from localStorage
-    user = JSON.parse(localStorage.getItem('user'));
-    console.log(user)
+  this.load = function() {
+    // Load User city and searched cities from localStorage
+    let userData = JSON.parse(localStorage.getItem('user'));
+    console.log(userData)
     
-    return user;
+    return userData;
   }
 }
 
@@ -101,24 +102,29 @@ function getCoords(cityName) {
   const cityRequest = new RequestType('getCoords', 'geo/1.0/direct', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
-  fetch(cityRequest.requestUrl).then((response) => {
+  fetch(cityRequest.requestUrl).then(async (response) => {
     if (response.ok) {
-      return response.json().then((data) => {
-        console.log('getCoords: ', data[0])
-        // user.lastCitySearched = data[0].name;
-        // user.lat = data[0].lat;
-        // user.lon = data[0].lon;
-        // if (!user.searchedCities.includes(data[0].name)) {
-        //   user.searchedCities.push(data[0].name)
-        oneCallRequest(data[0])
-        // }
-        // user.save();
-        return data[0];
-      });
+      const data = await response.json();
+      return data;
     } else {
       alert('Error: ' + response.statusText);
     }
-  });
+
+  }).then((data) => {
+    console.log('getCoords: ', data);
+    let user = new User();
+    console.log(user)
+    console.log('data', data, "data Name: ", data.name)
+    user.lastCitySearched = data[0].name;
+    console.log('user::Fetch: ', user.lastCitySearched)
+    user.lat = data[0].lat;
+    user.lon = data[0].lon;
+    if (!user.searchedCities.includes(data[0].name)) {
+      user.searchedCities.push(data[0].name);
+    }
+    oneCallRequest(data);
+    user.save();
+  }).catch();
 }
 
 // Create a city weather request
@@ -130,83 +136,90 @@ function createCityRequest(city) {
   const cityRequest = new RequestType('cityCurrentWeather', 'data/2.5/weather', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
-  fetch(cityRequest.requestUrl).then(function (response) {
+  fetch(cityRequest.requestUrl).then(async (response) => {
     if (response.ok) {
-      return response.json().then(function (data) {
-        user.lastCitySearched = data.name;
-        user.lat = data.coord.lat;
-        user.lon = data.coord.lon;
-        if (!user.searchedCities.includes(data.name)) {
-          user.searchedCities.push(data.name)
-        }
-        fillCityContainerInfo(data);
-        user.save();
-      });
+      const data = await response.json();
+      return data;
     } else {
       alert('Error: ' + response.statusText);
     }
-  });
+    
+  }).then((data) => {
+    let user = new User();
+    console.log(user)
+    console.log('data', data, "data Name: ", data.name)
+    user.lastCitySearched = data.name;
+    console.log('user::Fetch: ', user.lastCitySearched)
+    user.lat = data.coord.lat;
+    user.lon = data.coord.lon;
+    if (!user.searchedCities.includes(data.name)) {
+      user.searchedCities.push(data.name);
+    }
+    fillCityContainerInfo(data);
+    user.save();
+    }).catch((err) => {
+      console.log(err)
+    });
 }
 
 // Create a oneCallRequest
 function oneCallRequest(data) { 
   console.log('oneCallRequest: ', data)
   let params = {
-    lat: data.lat,
-    lon: data.lon,
+    lat: data[0].lat,
+    lon: data[0].lon,
     units: 'imperial'
   } 
   const cityRequest = new RequestType('oneCall', 'data/2.5/onecall', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
-  fetch(cityRequest.requestUrl).then(function (response) {
+  return fetch(cityRequest.requestUrl).then(async function (response) {
     if (response.ok) {
-      return response.json().then(function (data) {
-        return data;
-        // console.log('oneCall: ', data)
-        // // user.lastCitySearched = data.name;
-        // user.lat = data.lat;
-        // user.lon = data.lon;
-        // // if (!user.searchedCities.includes(data.name)) {
-        // //   user.searchedCities.push(data.name)
-        // // }
-        // fillCityContainerInfo(data);
-        // user.save();
-      });
+      const data = await response.json();
+      return data;
     } else {
       alert('Error: ' + response.statusText);
     }
+  }).then((data) => {
+    console.log('oneCall: data', data)
+    fillCityContainerInfo(data)
+  }).catch((err) => {
+    console.log(err);
   });
 }
 
 // Add listener to new city button list
 cityBtnsEl.on('click', function(event) {
   event.preventDefault();
-  let request = createCityRequest($(event.target).text());
-  fillCityContainerInfo(request.data)
-  console.log('CityBtnClickRequest: ', request)
+  createCityRequest($(event.target).text());
+  // fillCityContainerInfo(request.data)
+  // console.log('CityBtnClickRequest: ', request)
 });
 
 // Make OpenWeather API call when search button pressed
 searchBtnEl.on('click', function(event) {
   event.preventDefault();
-  let newListItem = $('<li>').addClass('list-group-item list-group-item-action text-center');
   
-  if (cityInputEl.val().replace(/\s+/g, '') != "" || !user.searchedCities.includes(cityInputEl.val())) {
-    // Create searched city button and clear field
-    getCoords(cityInputEl.val());
-    newListItem.text(cityInputEl.val());
-    cityBtnsEl.prepend(newListItem);
-    
-    // if (storedData.cod === 404) {
-    //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
-    // } else if (request.data.cod == 200) {
-    // } else {
-    //   return;
-    // }
-    // console.log(storedData)
+  if (cityInputEl.val().replace(/\s+/g, '') != null) {
+    // if (user.searchedCities.length < 1 
+    //   && !user.searchedCities.includes(cityInputEl.val())) {
+    //   console.log("user", user.searchedCities)
+      let newListItem = $('<li>').addClass('list-group-item list-group-item-action text-center');
+      getCoords(cityInputEl.val());
+      newListItem.text(cityInputEl.val());
+      cityBtnsEl.prepend(newListItem);
+      
+      // Create searched city button and clear field
+      // if (storedData.cod === 404) {
+      //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
+      // } else if (request.data.cod == 200) {
+      // } else {
+      //   return;
+      // }
+      // console.log(storedData)
 
-    cityInputEl.val("");
+      cityInputEl.val("");
+    // }
   }
 })
 
@@ -215,12 +228,12 @@ const currentBtn = $('#current-btn');
 
 currentBtn.on('click', function(event) {
   
-  // Check if the user allows finding location to get current weather
+  // Check if the User allows finding location to get current weather
   if(!navigator.geolocation) {
     // Default Location
     console.log('Geolocation is not supported by your browser.')
   } else {
-    // Use user's current location
+    // Use User's current location
     navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
   }
 })
@@ -251,12 +264,15 @@ function geolocationSuccess(position) {
     myModal.hide()
   })
 
-  oneCallRequest(user.lat, user.lon);
+  var oneCallData = oneCallRequest(user.lat, user.lon);
+  console.log('oneCallData: ', oneCallData)
 
 }
 
 function geolocationError() {
   console.log('Unable to retrieve your location');
 }
+
+var user = new User();
 console.log(user)
 user.load()
