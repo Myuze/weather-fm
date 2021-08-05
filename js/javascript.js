@@ -101,18 +101,19 @@ function getCoords(cityName) {
   const cityRequest = new RequestType('getCoords', 'geo/1.0/direct', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
-  fetch(cityRequest.requestUrl).then(function (response) {
+  fetch(cityRequest.requestUrl).then((response) => {
     if (response.ok) {
-      response.json().then(function (data) {
+      return response.json().then((data) => {
         console.log('getCoords: ', data[0])
-        user.lastCitySearched = data[0].name;
-        user.lat = data[0].lat;
-        user.lon = data[0].lon;
-        if (!user.searchedCities.includes(data[0].name)) {
-          user.searchedCities.push(data[0].name)
-          oneCallRequest(user.lat, user.lon)
-        }
-        user.save();
+        // user.lastCitySearched = data[0].name;
+        // user.lat = data[0].lat;
+        // user.lon = data[0].lon;
+        // if (!user.searchedCities.includes(data[0].name)) {
+        //   user.searchedCities.push(data[0].name)
+        oneCallRequest(data[0])
+        // }
+        // user.save();
+        return data[0];
       });
     } else {
       alert('Error: ' + response.statusText);
@@ -131,14 +132,14 @@ function createCityRequest(city) {
 
   fetch(cityRequest.requestUrl).then(function (response) {
     if (response.ok) {
-      response.json().then(function (data) {
-        fillCityContainerInfo(data);
+      return response.json().then(function (data) {
         user.lastCitySearched = data.name;
         user.lat = data.coord.lat;
         user.lon = data.coord.lon;
         if (!user.searchedCities.includes(data.name)) {
           user.searchedCities.push(data.name)
         }
+        fillCityContainerInfo(data);
         user.save();
       });
     } else {
@@ -148,10 +149,11 @@ function createCityRequest(city) {
 }
 
 // Create a oneCallRequest
-function oneCallRequest(lat, lon) { 
+function oneCallRequest(data) { 
+  console.log('oneCallRequest: ', data)
   let params = {
-    lat: lat,
-    lon: lon,
+    lat: data.lat,
+    lon: data.lon,
     units: 'imperial'
   } 
   const cityRequest = new RequestType('oneCall', 'data/2.5/onecall', params);
@@ -159,16 +161,17 @@ function oneCallRequest(lat, lon) {
 
   fetch(cityRequest.requestUrl).then(function (response) {
     if (response.ok) {
-      response.json().then(function (data) {
-        fillCityContainerInfo(data);
-        console.log('oneCall: ', data)
-        user.lastCitySearched = data.name;
-        user.lat = data.coord.lat;
-        user.lon = data.coord.lon;
-        if (!user.searchedCities.includes(data.name)) {
-          user.searchedCities.push(data.name)
-        }
-        user.save();
+      return response.json().then(function (data) {
+        return data;
+        // console.log('oneCall: ', data)
+        // // user.lastCitySearched = data.name;
+        // user.lat = data.lat;
+        // user.lon = data.lon;
+        // // if (!user.searchedCities.includes(data.name)) {
+        // //   user.searchedCities.push(data.name)
+        // // }
+        // fillCityContainerInfo(data);
+        // user.save();
       });
     } else {
       alert('Error: ' + response.statusText);
@@ -191,14 +194,13 @@ searchBtnEl.on('click', function(event) {
   
   if (cityInputEl.val().replace(/\s+/g, '') != "" || !user.searchedCities.includes(cityInputEl.val())) {
     // Create searched city button and clear field
-    // createCityRequest(cityInputEl.val());
     getCoords(cityInputEl.val());
     newListItem.text(cityInputEl.val());
+    cityBtnsEl.prepend(newListItem);
     
     // if (storedData.cod === 404) {
     //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
     // } else if (request.data.cod == 200) {
-    cityBtnsEl.prepend(newListItem);
     // } else {
     //   return;
     // }
@@ -250,6 +252,7 @@ function geolocationSuccess(position) {
   })
 
   oneCallRequest(user.lat, user.lon);
+
 }
 
 function geolocationError() {
