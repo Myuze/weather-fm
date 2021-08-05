@@ -8,7 +8,7 @@ const searchBtnEl = $('#search-btn');
 const cityBtnsEl = $('#city-btns');
 
 // User Object
-const user = {
+var user = {
   lastCitySearched: "",
   lat: 0,
   lon: 0,
@@ -22,7 +22,9 @@ const user = {
 
   load: function() {
     // Load user city and searched cities from localStorage
-    let user = localStorage.getItem('user');
+    user = JSON.parse(localStorage.getItem('user'));
+    console.log(user)
+    
     return user;
   }
 }
@@ -38,7 +40,7 @@ function RequestType(name, urlSegment, params={}) {
 
 // OpenWeather API Objects
 const openWeatherApi = {
-  baseUrl: "https://api.openweathermap.org/data/2.5/",
+  baseUrl: "https://api.openweathermap.org/",
 
   // Create Request URL, takes RequestType objects
   createRequestUrl: function(requestTypeObject) {
@@ -90,13 +92,41 @@ function fillCityContainerInfo(cityData) {
   currentUvindexEl.text('UV Index: ' + cityData.main.temp);
 }
 
+// Create a Geocoding request
+function getCoords(cityName) {
+  let params = {
+    q: cityName,
+    limit: 1
+  } 
+  const cityRequest = new RequestType('getCoords', 'geo/1.0/direct', params);
+  openWeatherApi.createRequestUrl(cityRequest);
+
+  fetch(cityRequest.requestUrl).then(function (response) {
+    if (response.ok) {
+      response.json().then(function (data) {
+        console.log('getCoords: ', data[0])
+        user.lastCitySearched = data[0].name;
+        user.lat = data[0].lat;
+        user.lon = data[0].lon;
+        if (!user.searchedCities.includes(data[0].name)) {
+          user.searchedCities.push(data[0].name)
+          oneCallRequest(user.lat, user.lon)
+        }
+        user.save();
+      });
+    } else {
+      alert('Error: ' + response.statusText);
+    }
+  });
+}
+
 // Create a city weather request
 function createCityRequest(city) { 
   let params = {
     q: city,
     units: 'imperial'
   } 
-  const cityRequest = new RequestType('cityCurrentWeather', 'weather', params);
+  const cityRequest = new RequestType('cityCurrentWeather', 'data/2.5/weather', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
   fetch(cityRequest.requestUrl).then(function (response) {
@@ -106,10 +136,10 @@ function createCityRequest(city) {
         user.lastCitySearched = data.name;
         user.lat = data.coord.lat;
         user.lon = data.coord.lon;
-        user.searchedCities.push(data.name)
+        if (!user.searchedCities.includes(data.name)) {
+          user.searchedCities.push(data.name)
+        }
         user.save();
-
-        localStorage.setItem(cityRequest.name, JSON.stringify(data));
       });
     } else {
       alert('Error: ' + response.statusText);
@@ -124,14 +154,21 @@ function oneCallRequest(lat, lon) {
     lon: lon,
     units: 'imperial'
   } 
-  const cityRequest = new RequestType('oneCall', 'data', params);
+  const cityRequest = new RequestType('oneCall', 'data/2.5/onecall', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
   fetch(cityRequest.requestUrl).then(function (response) {
     if (response.ok) {
       response.json().then(function (data) {
         fillCityContainerInfo(data);
-        localStorage.setItem(cityRequest.name, JSON.stringify(data));
+        console.log('oneCall: ', data)
+        user.lastCitySearched = data.name;
+        user.lat = data.coord.lat;
+        user.lon = data.coord.lon;
+        if (!user.searchedCities.includes(data.name)) {
+          user.searchedCities.push(data.name)
+        }
+        user.save();
       });
     } else {
       alert('Error: ' + response.statusText);
@@ -152,15 +189,16 @@ searchBtnEl.on('click', function(event) {
   event.preventDefault();
   let newListItem = $('<li>').addClass('list-group-item list-group-item-action text-center');
   
-  if (cityInputEl.val().replace(/\s+/g, '') != "") {
+  if (cityInputEl.val().replace(/\s+/g, '') != "" || !user.searchedCities.includes(cityInputEl.val())) {
     // Create searched city button and clear field
-    createCityRequest(cityInputEl.val());
+    // createCityRequest(cityInputEl.val());
+    getCoords(cityInputEl.val());
     newListItem.text(cityInputEl.val());
     
     // if (storedData.cod === 404) {
     //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
     // } else if (request.data.cod == 200) {
-    //   cityBtnsEl.prepend(newListItem);
+    cityBtnsEl.prepend(newListItem);
     // } else {
     //   return;
     // }
@@ -169,25 +207,6 @@ searchBtnEl.on('click', function(event) {
     cityInputEl.val("");
   }
 })
-
-// function apiCall(requestTypeObject) {
-
-//   fetch(requestTypeObject.requestUrl).then( function(response) {
-//     if (!response.status == 200) {
-//       // TODO: 404 Redirect
-//     }
-//     return response.json();
-  
-//   }).then( function(data) {
-//     // TODO: Do something neat with data
-//     // OR pass data to new function to handle various API requests
-//     localStorage.setItem(requestTypeObject.name, JSON.stringify(data));
-    
-//     return data;
-//   }).catch((err) => {
-//     console.log(err);
-//   });
-// }
 
 // Modal Functions
 const currentBtn = $('#current-btn');
@@ -230,9 +249,11 @@ function geolocationSuccess(position) {
     myModal.hide()
   })
 
-  apiCall(request);
+  oneCallRequest(user.lat, user.lon);
 }
 
 function geolocationError() {
   console.log('Unable to retrieve your location');
 }
+console.log(user)
+user.load()
