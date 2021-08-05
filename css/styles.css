@@ -1,5 +1,6 @@
 :root {
   --font-teko: 'Teko', sans-serif;
+  --font-robo: 'Roboto', sans-serif;
   --bg-default: black;
   --txt-default: cyan;
 }
@@ -12,12 +13,18 @@
 
 body {
   background-color: var(--bg-default);
-  color: var(--txt-default);
+  color: var(black);
 }
 
 header h1 {
   font-family: var(--font-teko);
   text-align: center;
+}
+
+#city-container {
+  color: black;
+  background-color: rgb(216, 216, 216);
+  font-family: var(--font-robo);
 }
 
 input {

@@ -1,5 +1,5 @@
 // OpenWeather API key
-const apiKey="";
+const apiKey="0ff878aad5849f57a154ff7fa09e8f1a";
 
 // Page Elements
 const searchColEl = $('#search-column');
@@ -26,60 +26,20 @@ const user = {
   }
 }
 
-// Supported Open Weather API Request Objects
-function Request(name, params={}) {
+// Supported Open Weather API Request Constructor
+function RequestType(name, urlSegment, params={}) {
   this.name = name,
-  this.params = {},
-  this.data = {},
-
-  this.initialize = function() {
-    return 
-  }
-
-  // Current Weather Data Request
-  currentWeatherRequest: {
-    urlSegment: 'weather',
-    params: {
-      q: 'cityName',
-      units: 'imperial'
-    },
-  },
-
-  // One Call API Request
-  oneCallRequest: {
-    urlSegment: 'onecall',
-    params: {
-      lat: 0,
-      lon: 0,
-      units: 'imperial'
-    },
-  },
-
-  // Forecast API Request
-  forecastRequest: {
-    urlSegment: 'forecast',
-    params: {
-      q: 'cityName',
-      units: 'imperial'
-    },
-  }
+  this.urlSegment = urlSegment,
+  this.params = params,
+  this.requestUrl = "",
+  this.data = {}
 }
 
 // OpenWeather API Objects
 const openWeatherApi = {
   baseUrl: "https://api.openweathermap.org/data/2.5/",
 
-  initializeRequest: function(requestTypeObject) {
-    var requestParams = requestTypeObject.params;
-
-    for (let [key, value] of Object.entries(requestParams)) {
-      if (key === 'q') {
-        value =
-      }
-
-    }
-  },
-
+  // Create Request URL, takes RequestType objects
   createRequestUrl: function(requestTypeObject) {
     let requestUrl = openWeatherApi.baseUrl;
     let paramCount = 0;
@@ -101,20 +61,16 @@ const openWeatherApi = {
     // Add apiKey as last parameter
     requestUrl += `&appid=${apiKey}`
 
-    return requestUrl;
-  },
+    // Add requestUrl to RequestType
+    requestTypeObject.requestUrl = requestUrl;
 
-  getRequestData: function(requestTypeObject) {
-    let requestUrl = openWeatherApi.createRequestUrl(requestTypeObject);
-    
-    apiCall(requestUrl).then(data => {
-      requestTypeObject.data = data;
-    });
+    return requestUrl;
   }
 }
 
 // City Container Elements
 const currentCityEl = $('#city-current-weather');
+const currentIconEl = $('#w-icon');
 const currentTempEl = $('#current-temp');
 const currentWindEl = $('#current-wind');
 const currentHumidityEl = $('#current-humidity');
@@ -122,82 +78,109 @@ const currentUvindexEl = $('#current-uv-index');
 
 // Fill city container info
 function fillCityContainerInfo(cityData) {
-  // TODO: Fill city container info
+  let date = moment(cityData.dt * 1000).format('MM/DD/YY')
+  let icon = `http://openweathermap.org/img/wn/${cityData.weather[0].icon}@2x.png`
   console.log('cityData: ', cityData)
-  currentCityEl.text(cityData.name);
+  currentCityEl.text(cityData.name + ` (${date})`);
+  currentIconEl.attr({'src': icon, 'alt': 'Weather Icon'});
   currentTempEl.text('Temp: ' + cityData.main.temp + '°F');
   currentWindEl.text('Wind: ' + cityData.wind.speed + 'mph');
   currentHumidityEl.text('Humidity: ' + cityData.main.humidity + '%');
   currentUvindexEl.text('UV Index: ' + cityData.main.temp);
-  
-  console.log('CITY INFO FILLED');
 }
 
 // Create a city weather request
-function createCityRequest(request) {  
-  openWeatherApi.getRequestData(request);
+function createCityRequest(city) { 
+  let params = {
+    q: city,
+    units: 'imperial'
+  } 
+  const cityRequest = new RequestType('cityCurrentWeather', 'weather', params);
+  openWeatherApi.createRequestUrl(cityRequest);
 
-  return request;
+  fetch(cityRequest.requestUrl).then(function (response) {
+    if (response.ok) {
+      response.json().then(function (data) {
+        fillCityContainerInfo(data);
+        localStorage.setItem(cityRequest.name, JSON.stringify(data));
+      });
+    } else {
+      alert('Error: ' + response.statusText);
+    }
+  });
+}
+
+// Create a oneCallRequest
+function oneCallRequest(lat, lon) { 
+  let params = {
+    lat: lat,
+    lon: lon,
+    units: 'imperial'
+  } 
+  const cityRequest = new RequestType('oneCall', 'data', params);
+  openWeatherApi.createRequestUrl(cityRequest);
+
+  fetch(cityRequest.requestUrl).then(function (response) {
+    if (response.ok) {
+      response.json().then(function (data) {
+        fillCityContainerInfo(data);
+        localStorage.setItem(cityRequest.name, JSON.stringify(data));
+      });
+    } else {
+      alert('Error: ' + response.statusText);
+    }
+  });
 }
 
 // Add listener to new city button list
 cityBtnsEl.on('click', function(event) {
-  createCityRequest($(event.target).text());
+  event.preventDefault();
+  let request = createCityRequest($(event.target).text());
+  fillCityContainerInfo(request.data)
+  console.log('CityBtnClickRequest: ', request)
 });
 
 // Make OpenWeather API call when search button pressed
-searchBtnEl.on('click', function() {
+searchBtnEl.on('click', function(event) {
+  event.preventDefault();
   let newListItem = $('<li>').addClass('list-group-item list-group-item-action text-center');
-  let request = openWeatherApi.forecastRequest;
-  request.params.q = cityInputEl.val();
-
+  
   if (cityInputEl.val().replace(/\s+/g, '') != "") {
     // Create searched city button and clear field
+    createCityRequest(cityInputEl.val());
     newListItem.text(cityInputEl.val());
     
-    // createCityRequest(cityInputEl.val());
-    openWeatherApi.getRequestData(request);
-
-    console.log('cod', request.data.cod)
-    
-    if (request.data.cod === 404) {
-      cityInputEl.attr('placeholder', 'City Does Not Exist!')
-    } else if (request.data.cod == 200) {
-      cityBtnsEl.prepend(newListItem);
-    } else {
-      return;
-    }
-
-    fillCityContainerInfo(request.data);
+    // if (storedData.cod === 404) {
+    //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
+    // } else if (request.data.cod == 200) {
+    //   cityBtnsEl.prepend(newListItem);
+    // } else {
+    //   return;
+    // }
+    // console.log(storedData)
 
     cityInputEl.val("");
   }
 })
 
-// Function to create API call using fetch
-async function apiCall(baseUrl, params = {}) {
-  let paramsString = ""
+// function apiCall(requestTypeObject) {
 
-  // Add additional params if provided
-  if (params != null) {
-    for (let [key, value] of Object.entries(params)) {
-      paramsString += `&${key}=${value}`;
-    }
-  };
-
-  let requestUrl = baseUrl + paramsString;
-
-  try {
-    const response = await fetch(requestUrl);
-    if (!response.status == 200) {
-      console.log(response.status)
-    }
-    const data = await response.json();
-    return data;
-  } catch (err) {
-    console.log(err);
-  }
-}
+//   fetch(requestTypeObject.requestUrl).then( function(response) {
+//     if (!response.status == 200) {
+//       // TODO: 404 Redirect
+//     }
+//     return response.json();
+  
+//   }).then( function(data) {
+//     // TODO: Do something neat with data
+//     // OR pass data to new function to handle various API requests
+//     localStorage.setItem(requestTypeObject.name, JSON.stringify(data));
+    
+//     return data;
+//   }).catch((err) => {
+//     console.log(err);
+//   });
+// }
 
 // Modal Functions
 const currentBtn = $('#current-btn');
@@ -226,7 +209,7 @@ function geolocationSuccess(position) {
   user.lat = position.coords.latitude;
   user.lon = position.coords.longitude;
 
-  let request = requestType.oneCallRequest;
+  let request = new RequestType('oneCallRequest', 'data')
   request.params.lat = user.lat;
   request.params.lon = user.lon;
   
@@ -240,12 +223,9 @@ function geolocationSuccess(position) {
     myModal.hide()
   })
 
-  openWeatherApi.getRequestData(request);
+  apiCall(request);
 }
 
 function geolocationError() {
   console.log('Unable to retrieve your location');
 }
-
-// Main
-displayCurrentForecast(requestType.oneCallRequest.data);
