@@ -9,20 +9,21 @@ const cityBtnsEl = $('#city-btns');
 
 // User Object
 const user = {
-  city: "",
+  lastCitySearched: "",
   lat: 0,
   lon: 0,
   searchedCities: [],
 
   save: function() {
     // Save user city and saved searched cities to localStorage
-    localStorage.setItem('user', JSON.stringify(this.user));
+    console.log(this)
+    localStorage.setItem('user', JSON.stringify(this));
   },
 
   load: function() {
     // Load user city and searched cities from localStorage
-    this.user = localStorage.getItem('user');
-    return this.user;
+    let user = localStorage.getItem('user');
+    return user;
   }
 }
 
@@ -102,6 +103,12 @@ function createCityRequest(city) {
     if (response.ok) {
       response.json().then(function (data) {
         fillCityContainerInfo(data);
+        user.lastCitySearched = data.name;
+        user.lat = data.coord.lat;
+        user.lon = data.coord.lon;
+        user.searchedCities.push(data.name)
+        user.save();
+
         localStorage.setItem(cityRequest.name, JSON.stringify(data));
       });
     } else {
