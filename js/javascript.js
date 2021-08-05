@@ -26,11 +26,16 @@ const user = {
   }
 }
 
-// OpenWeather API Objects
-const openWeatherApi = {
-  baseUrl: "https://api.openweathermap.org/data/2.5/",
+// Supported Open Weather API Request Objects
+function Request(name, params={}) {
+  this.name = name,
+  this.params = {},
+  this.data = {},
 
-  // Supported Open Weather API Request Objects
+  this.initialize = function() {
+    return 
+  }
+
   // Current Weather Data Request
   currentWeatherRequest: {
     urlSegment: 'weather',
@@ -38,7 +43,6 @@ const openWeatherApi = {
       q: 'cityName',
       units: 'imperial'
     },
-    data: {}
   },
 
   // One Call API Request
@@ -49,27 +53,42 @@ const openWeatherApi = {
       lon: 0,
       units: 'imperial'
     },
-    data: {}
   },
 
+  // Forecast API Request
   forecastRequest: {
     urlSegment: 'forecast',
     params: {
       q: 'cityName',
       units: 'imperial'
     },
-    data: {}
+  }
+}
+
+// OpenWeather API Objects
+const openWeatherApi = {
+  baseUrl: "https://api.openweathermap.org/data/2.5/",
+
+  initializeRequest: function(requestTypeObject) {
+    var requestParams = requestTypeObject.params;
+
+    for (let [key, value] of Object.entries(requestParams)) {
+      if (key === 'q') {
+        value =
+      }
+
+    }
   },
 
-  createRequestUrl: function(openWeatherRequestObject) {
+  createRequestUrl: function(requestTypeObject) {
     let requestUrl = openWeatherApi.baseUrl;
     let paramCount = 0;
     
     // Add Request specified url
-    requestUrl += openWeatherRequestObject.urlSegment;
+    requestUrl += requestTypeObject.urlSegment;
     
     // Add Request specified parameters
-    for (let [key, value] of Object.entries(openWeatherRequestObject.params)) {
+    for (let [key, value] of Object.entries(requestTypeObject.params)) {
 
       if (paramCount < 1) {
         requestUrl += `?${key}=${value}`;
@@ -85,11 +104,11 @@ const openWeatherApi = {
     return requestUrl;
   },
 
-  getRequestData: function(openWeatherRequestObject) {
-    let requestUrl = openWeatherApi.createRequestUrl(openWeatherRequestObject);
+  getRequestData: function(requestTypeObject) {
+    let requestUrl = openWeatherApi.createRequestUrl(requestTypeObject);
     
     apiCall(requestUrl).then(data => {
-      openWeatherRequestObject.data = data;
+      requestTypeObject.data = data;
     });
   }
 }
@@ -207,7 +226,7 @@ function geolocationSuccess(position) {
   user.lat = position.coords.latitude;
   user.lon = position.coords.longitude;
 
-  let request = openWeatherApi.oneCallRequest;
+  let request = requestType.oneCallRequest;
   request.params.lat = user.lat;
   request.params.lon = user.lon;
   
@@ -229,4 +248,4 @@ function geolocationError() {
 }
 
 // Main
-displayCurrentForecast(openWeatherApi.oneCallRequest.data);
+displayCurrentForecast(requestType.oneCallRequest.data);
