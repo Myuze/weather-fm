@@ -35,12 +35,14 @@ function load() {
 }
 
 // Supported Open Weather API Requests
-function RequestType(name, urlSegment, params={}) {
-  this.name = name,
-  this.urlSegment = urlSegment,
-  this.params = params,
-  this.requestUrl = "",
-  this.data = {}
+class RequestType {
+  constructor(name, urlSegment, params={}) {
+    this.name = name,
+    this.urlSegment = urlSegment,
+    this.params = params,
+    this.requestUrl = "",
+    this.data = {}
+  }
 }
 
 // OpenWeather API Objects
@@ -158,6 +160,7 @@ function fillCityCurrentContainerInfo(cityData) {
 
 // Fill Forecast Data
 function fillForecastContainer(data) {
+  forecastContainerEl.empty();
   for (day = 0; day < 5; day++) {
     let forecastCard = new ForecastCard(`day${day}`, data.daily, day);
     forecastContainerEl.append(forecastCard.createCard());
@@ -274,7 +277,7 @@ function oneCallRequest(lat, lon) {
 // Add listener to new city button list
 cityBtnsEl.on('click', function(event) {
   event.preventDefault();
-  createCityRequest($(event.target).text());
+  getCoords($(event.target).text());
 });
 
 function createCitySearchBtn(cityName) {
