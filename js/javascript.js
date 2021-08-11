@@ -39,11 +39,10 @@ function load() {
 // Supported Open Weather API Requests
 class RequestType {
   constructor(name, urlSegment, params={}) {
-    this.name = name,
-    this.urlSegment = urlSegment,
-    this.params = params,
-    this.requestUrl = "",
-    this.data = {}
+    this.name = name;
+    this.urlSegment = urlSegment;
+    this.params = params;
+    this.requestUrl = "";
   }
 }
 
@@ -88,7 +87,6 @@ const currentWindEl = $('#current-wind');
 const currentHumidityEl = $('#current-humidity');
 const currentUvindexEl = $('#current-uv-index');
 
-
 class CurrentWeather {
   constructor(data) {
     this.name = "",
@@ -119,10 +117,10 @@ class ForecastCard {
     // Card Elements
     let cardDiv = $('<div>').addClass('h-100 forecast-card-1 card m-2 border border-1 border-dark').attr('style', "width: 10rem;");
     let cardDate = $('<h3>').addClass('forecast-date').text(date);
-    let cardIcon = $('<img>').addClass('card-weather-icon').attr('src', icon);
-    let cardTemp = $('<p>').addClass('card-temp').text(`Temp: ${this.temp}`);
-    let cardWind = $('<p>').addClass('card-wind').text(`Wind: ${this.wind}`);
-    let cardHumidity = $('<p>').addClass('card-humidity').text(`Humidity: ${this.humidity}`);
+    let cardIcon = $('<img>').addClass('card-weather-icon').attr({'src': icon, 'alt': 'Weather Icon'});
+    let cardTemp = $('<p>').addClass('card-temp').text(`Temp: ${this.temp}°F`);
+    let cardWind = $('<p>').addClass('card-wind').text(`Wind: ${this.wind} mph`);
+    let cardHumidity = $('<p>').addClass('card-humidity').text(`Humidity: ${this.humidity}%`);
     // Append Elements to Div
     cardDiv.append(cardDate);
     cardDiv.append(cardIcon);
@@ -136,7 +134,6 @@ class ForecastCard {
 
 // Fill city container info
 function fillCityCurrentContainerInfo(cityData) {
-  console.log('cityData::fill: ', cityData)
   let date = moment(cityData.current.dt * 1000).format('MM/DD/YY')
   let icon = `http://openweathermap.org/img/wn/${cityData.current.weather[0].icon}@2x.png`
   currentCityEl.text(user.lastCitySearched + ` (${date})`);
@@ -222,7 +219,7 @@ function oneCallRequest(lat, lon) {
     fillCityCurrentContainerInfo(data)
     fillForecastContainer(data);
     console.log('oneCallRequest: before LS.set', user.lastCitySearched)
-    return localStorage.setItem(user.lastCitySearched, JSON.stringify(data));
+    // return localStorage.setItem(user.lastCitySearched, JSON.stringify(data));
 
   }).catch((err) => {
     console.log(err);
