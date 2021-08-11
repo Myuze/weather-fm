@@ -3,9 +3,10 @@ const apiKey="0ff878aad5849f57a154ff7fa09e8f1a";
 
 // Page Elements
 const searchColEl = $('#search-column');
-const cityInputEl = $('#city-input')
+const cityInputEl = $('#city-input');
 const searchBtnEl = $('#search-btn');
 const cityBtnsEl = $('#city-btns');
+const forecastContainerEl = $('#forecast-container');
 
 // User
 function User(userName = 'default') {
@@ -14,22 +15,23 @@ function User(userName = 'default') {
   this.lat = 0,
   this.lon = 0,
   this.searchedCities = [],
-  this.isNewUser = true,
+  this.isNewUser = true
+}
 
-  this.save = function() {
-    // Save User city and saved searched cities to localStorage
-    this.isNewUser = false;
-    console.log(this)
-    localStorage.setItem('user', JSON.stringify(this));
-  },
+function save(user) {
+  // Save User city and saved searched cities to localStorage
+  user.isNewUser = false;
+  console.log(user)
+  localStorage.setItem('userWeather', JSON.stringify(user));
+}
 
-  this.load = function() {
-    // Load User city and searched cities from localStorage
-    let userData = JSON.parse(localStorage.getItem('user'));
-    console.log(userData)
-    
-    return userData;
-  }
+function load() {
+  // Load User city and searched cities from localStorage
+  let userData = JSON.parse(localStorage.getItem('userWeather'));
+  localStorage.removeItem('userWeather')
+  console.log(userData)
+  
+  return userData;
 }
 
 // Supported Open Weather API Requests
@@ -82,37 +84,63 @@ const currentWindEl = $('#current-wind');
 const currentHumidityEl = $('#current-humidity');
 const currentUvindexEl = $('#current-uv-index');
 
-function CurrentWeather(data) {
-  this.name = "",
-  this.date = data.dt,
-  this.icon = "",
-  this.temp = 0,
-  this.wind = 0,
-  this.humidity = 0,
-  this.uvi = 0,
-  this.uvi_color = ""
+
+class CurrentWeather {
+  constructor(data) {
+    this.name = "",
+    this.date = data.dt,
+    this.icon = "",
+    this.temp = 0,
+    this.wind = 0,
+    this.humidity = 0,
+    this.uvi = 0,
+    this.uvi_color = ""
+  }
 }
 
-function ForecastCard(data) {
-  this.name = "",
-  this.date = data.dt,
-  this.icon = "",
-  this.temp = 0,
-  this.wind = 0,
-  this.humidity = 0
+// Forecast Card
+class ForecastCard {
+  constructor(cardName, daily, index) {
+    this.name = cardName;
+    this.date = daily[index].dt;
+    this.icon = daily[index].weather[0].icon;
+    this.temp = daily[index].temp.max;
+    this.wind = daily[index].wind_speed;
+    this.humidity = daily[index].humidity;
+  }
+
+  createCard() {
+    let date = moment(this.date * 1000).format('MM/DD/YY');
+    let icon = `http://openweathermap.org/img/wn/${this.icon}@4x.png`
+    // Card Elements
+    let cardDiv = $('<div>').addClass('h-100 forecast-card-1 card m-2 border border-1 border-dark').attr('style', "width: 10rem;");
+    let cardDate = $('<h3>').addClass('forecast-date').text(date);
+    let cardIcon = $('<img>').addClass('card-weather-icon').attr('src', icon);
+    let cardTemp = $('<p>').addClass('card-temp').text(`Temp: ${this.temp}`);
+    let cardWind = $('<p>').addClass('card-wind').text(`Wind: ${this.wind}`);
+    let cardHumidity = $('<p>').addClass('card-humidity').text(`Humidity: ${this.humidity}`);
+    // Append Elements to Div
+    cardDiv.append(cardDate);
+    cardDiv.append(cardIcon);
+    cardDiv.append(cardTemp);
+    cardDiv.append(cardWind);
+    cardDiv.append(cardHumidity);
+    
+    return cardDiv;
+  }
 }
 
 // Fill city container info
 function fillCityContainerInfo(cityData) {
   console.log('cityData::fill: ', cityData)
-  let date = moment(cityData.dt * 1000).format('MM/DD/YY')
+  let date = moment(cityData.dt * 1000).format('MM/DD/YY');
   let icon = `http://openweathermap.org/img/wn/${cityData.weather[0].icon}@2x.png`
   currentCityEl.text(cityData.name + ` (${date})`);
   currentIconEl.attr({'src': icon, 'alt': 'Weather Icon'});
   currentTempEl.text('Temp: ' + cityData.main.temp + '°F');
   currentWindEl.text('Wind: ' + cityData.wind.speed + ' mph');
   currentHumidityEl.text('Humidity: ' + cityData.main.humidity + '%');
-  currentUvindexEl.text('UV Index: ' + cityData.main.temp);
+  // currentUvindexEl.text('UV Index: ' + cityData.main.temp);
 }
 
 // Fill city container info
@@ -126,6 +154,14 @@ function fillCityCurrentContainerInfo(cityData) {
   currentWindEl.text('Wind: ' + cityData.current.wind_speed + ' mph');
   currentHumidityEl.text('Humidity: ' + cityData.current.humidity + '%');
   currentUvindexEl.text('UV Index: ' + cityData.current.uvi);
+}
+
+// Fill Forecast Data
+function fillForecastContainer(data) {
+  for (day = 0; day < 5; day++) {
+    let forecastCard = new ForecastCard(`day${day}`, data.daily, day);
+    forecastContainerEl.append(forecastCard.createCard());
+  }
 }
 
 // Create a Geocoding request
@@ -143,20 +179,28 @@ function getCoords(cityName) {
       return data;
     } else {
       alert('Error: ' + response.statusText);
+      return response;
     }
 
   }).then((data) => {
     console.log('getCoords: ', data);
     console.log(user)
-    user.lastCitySearched = data[0].name;
-    console.log('user::Fetch: ', user.lastCitySearched)
-    user.lat = data[0].lat;
-    user.lon = data[0].lon;
-    if (!user.searchedCities.includes(data[0].name)) {
-      user.searchedCities.push(data[0].name);
-    }
-    oneCallRequest(user.lat, user.lon);
-    user.save();
+    if (data.length < 1 || null == data) {
+      console.log('City Not Found');
+      return data;
+
+    } else {
+
+      user.lastCitySearched = data[0].name;
+      console.log('user::Fetch: ', user.lastCitySearched)
+      user.lat = data[0].lat;
+      user.lon = data[0].lon;
+      if (!user.searchedCities.includes(data[0].name)) {
+        user.searchedCities.push(data[0].name);
+      }
+      return oneCallRequest(user.lat, user.lon);
+    } 
+
   }).catch((err) => {
     console.log(err);
   });
@@ -189,9 +233,8 @@ function createCityRequest(city) {
     if (!user.searchedCities.includes(data.name)) {
       user.searchedCities.push(data.name);
     }
-    fillCityContainerInfo(data);
-    console.log('before save: ', user)
-    user.save();
+    return fillCityContainerInfo(data);
+
     }).catch((err) => {
       console.log(err)
     });
@@ -207,16 +250,22 @@ function oneCallRequest(lat, lon) {
   const cityRequest = new RequestType('oneCall', 'data/2.5/onecall', params);
   openWeatherApi.createRequestUrl(cityRequest);
 
-  return fetch(cityRequest.requestUrl).then(async function (response) {
+  fetch(cityRequest.requestUrl).then(async function (response) {
     if (response.ok) {
       const data = await response.json();
       return data;
+
     } else {
       alert('Error: ' + response.statusText);
     }
+    
   }).then((data) => {
     console.log('oneCall: data', data)
     fillCityCurrentContainerInfo(data)
+    fillForecastContainer(data);
+    console.log('oneCallRequest: before LS.set', user.lastCitySearched)
+    return localStorage.setItem(user.lastCitySearched, JSON.stringify(data));
+
   }).catch((err) => {
     console.log(err);
   });
@@ -240,24 +289,25 @@ searchBtnEl.on('click', function(event) {
   event.preventDefault();
   let cityInput = cityInputEl.val().replace(/\s+/g, '');
   
-  if (cityInput != null || cityInput != "") {
+  if (cityInput != null || cityInput != "" && user.searchedCities.includes(cityInput)) {
+    createCitySearchBtn(cityInputEl.val());
     // if (user.searchedCities.length < 1 
     //   && !user.searchedCities.includes(cityInputEl.val())) {
     //   console.log("user", user.searchedCities)
-    createCitySearchBtn(cityInputEl.val());
       
-      // Create searched city button and clear field
-      // if (storedData.cod === 404) {
-      //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
-      // } else if (request.data.cod == 200) {
-      // } else {
-      //   return;
-      // }
-      // console.log(storedData)
-
-      cityInputEl.val("");
+    // Create searched city button and clear field
+    // if (storedData.cod === 404) {
+    //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
+    // } else if (request.data.cod == 200) {
+    // } else {
+    //   return;
     // }
-  }
+    // console.log(storedData)
+
+    // }
+    }
+    save(user);
+    cityInputEl.val("");
 })
 
 // Modal Functions
@@ -311,11 +361,12 @@ function geolocationError() {
 }
 
 // Get existing search data on load
-var user = JSON.parse(localStorage.getItem('user'));
+var user = load();
 console.log(user)
 if (user === null) {
   user = new User();
 } else {
+
   user.searchedCities.forEach(city => {
     createCitySearchBtn(city);
   });
