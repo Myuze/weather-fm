@@ -209,40 +209,6 @@ function getCoords(cityName) {
   });
 }
 
-// Create a city weather request
-function createCityRequest(city) { 
-  let params = {
-    q: city,
-    units: 'imperial'
-  } 
-  const cityRequest = new RequestType('cityCurrentWeather', 'data/2.5/weather', params);
-  openWeatherApi.createRequestUrl(cityRequest);
-
-  fetch(cityRequest.requestUrl).then(async (response) => {
-    if (response.ok) {
-      const data = await response.json();
-      return data;
-    } else {
-      alert('Error: ' + response.statusText);
-    }
-    
-  }).then((data) => {
-    console.log(user)
-    console.log('data', data, "data Name: ", data.name)
-    user.lastCitySearched = data.name;
-    console.log('user::Fetch: ', user.lastCitySearched)
-    user.lat = data.coord.lat;
-    user.lon = data.coord.lon;
-    if (!user.searchedCities.includes(data.name)) {
-      user.searchedCities.push(data.name);
-    }
-    return fillCityContainerInfo(data);
-
-    }).catch((err) => {
-      console.log(err)
-    });
-}
-
 // Create a oneCallRequest
 function oneCallRequest(lat, lon) { 
   let params = {
