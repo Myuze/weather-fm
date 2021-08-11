@@ -9,13 +9,15 @@ const cityBtnsEl = $('#city-btns');
 const forecastContainerEl = $('#forecast-container');
 
 // User
-function User(userName = 'default') {
-  this.name = userName,
-  this.lastCitySearched = "",
-  this.lat = 0,
-  this.lon = 0,
-  this.searchedCities = [],
-  this.isNewUser = true
+class User {
+  constructor(userName = 'default') {
+    this.name = userName,
+    this.lastCitySearched = "",
+    this.lat = 0,
+    this.lon = 0,
+    this.searchedCities = [],
+    this.isNewUser = true
+  }
 }
 
 function save(user) {
@@ -133,19 +135,6 @@ class ForecastCard {
 }
 
 // Fill city container info
-function fillCityContainerInfo(cityData) {
-  console.log('cityData::fill: ', cityData)
-  let date = moment(cityData.dt * 1000).format('MM/DD/YY');
-  let icon = `http://openweathermap.org/img/wn/${cityData.weather[0].icon}@2x.png`
-  currentCityEl.text(cityData.name + ` (${date})`);
-  currentIconEl.attr({'src': icon, 'alt': 'Weather Icon'});
-  currentTempEl.text('Temp: ' + cityData.main.temp + '°F');
-  currentWindEl.text('Wind: ' + cityData.wind.speed + ' mph');
-  currentHumidityEl.text('Humidity: ' + cityData.main.humidity + '%');
-  // currentUvindexEl.text('UV Index: ' + cityData.main.temp);
-}
-
-// Fill city container info
 function fillCityCurrentContainerInfo(cityData) {
   console.log('cityData::fill: ', cityData)
   let date = moment(cityData.current.dt * 1000).format('MM/DD/YY')
@@ -260,20 +249,6 @@ searchBtnEl.on('click', function(event) {
   
   if (cityInput != null || cityInput != "" && user.searchedCities.includes(cityInput)) {
     createCitySearchBtn(cityInputEl.val());
-    // if (user.searchedCities.length < 1 
-    //   && !user.searchedCities.includes(cityInputEl.val())) {
-    //   console.log("user", user.searchedCities)
-      
-    // Create searched city button and clear field
-    // if (storedData.cod === 404) {
-    //   cityInputEl.attr('placeholder', 'City Does Not Exist!')
-    // } else if (request.data.cod == 200) {
-    // } else {
-    //   return;
-    // }
-    // console.log(storedData)
-
-    // }
     }
     save(user);
     cityInputEl.val("");
@@ -293,13 +268,6 @@ currentBtn.on('click', function(event) {
     navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
   }
 })
-
-// Set Current location, or default location if geolocation unavailable
-function displayCurrentForecast(data) {
-  // TODO: Add logic to fill out City Container
-  // TODO: Add logic to fill out 5-Day Forecast cards
-  console.log(data)
-}
 
 // Geolocation functions
 function geolocationSuccess(position) {
@@ -332,7 +300,7 @@ function geolocationError() {
 // Get existing search data on load
 var user = load();
 console.log(user)
-if (user === null) {
+if (null === user) {
   user = new User();
 } else {
 
