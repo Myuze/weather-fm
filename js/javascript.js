@@ -104,7 +104,7 @@ class CurrentWeather {
     let currentHumidity = $('<p>').addClass('current-humidity').text(`Humidity: ${this.humidity}%`);
     // Add Uvi with background color
     let currentUvi = $('<p>').addClass('current-uvi').text('UV Index: ');
-    let currentUviSpan = $('<span>').text(this.uvi).css({'background-color': this.uvi_color, 'padding': '3px 10px', 'border-radius': '5px'});
+    let currentUviSpan = $('<span>').text(this.uvi).css({'color': 'white', 'background-color': this.uvi_color, 'padding': '3px 10px', 'border-radius': '5px'});
     currentUvi.append(currentUviSpan);
     // Append Elements to Div
     currentDiv.append(currentDate);
