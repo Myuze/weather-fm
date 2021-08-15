@@ -26,14 +26,13 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Allow Geolocation</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <p id="modal-txt">Would you like to get current weather conditions for your location?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" id="allow" class="btn btn-primary">Allow</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" id="allow" class="btn btn-primary">OK</button>
+            <button type="button" id="close" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
           </div>
         </div>
       </div>
@@ -51,7 +50,7 @@
             </div>
             <div id="weather-info-container" class="min-vh-100 col-9 bg-light">
                 <h2 class="text-center">Today's Current Weather</h3>
-                <div id="city-container" class="mb-3 p-1 border border-1 border-dark"></div>
+                <div id="city-container" class="mb-3 p-1 border border-1 border-dark">Allow Geolocation or Enter a search to show current weather.</div>
                 <h2 class="text-center">5-Day Forecast</h2>
                 <div id="forecast-container" class="card-group row">
                 </div>

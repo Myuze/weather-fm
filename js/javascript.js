@@ -216,9 +216,7 @@ function getCoords(cityName) {
       console.log('user::Fetch: ', user.lastCitySearched)
       user.lat = data[0].lat;
       user.lon = data[0].lon;
-      if (!user.searchedCities.includes(data[0].name)) {
-        user.searchedCities.push(data[0].name);
-      }
+
       return oneCallRequest(user.lat, user.lon);
     } 
 
@@ -251,8 +249,7 @@ function oneCallRequest(lat, lon) {
     fillCityCurrentContainerInfo(data)
     fillForecastContainer(data);
     console.log('oneCallRequest: before LS.set', user.lastCitySearched)
-    // return localStorage.setItem(user.lastCitySearched, JSON.stringify(data));
-
+    
   }).catch((err) => {
     console.log(err);
   });
@@ -288,26 +285,31 @@ function verifyGeolocation() {
   var myModal = new bootstrap.Modal(document.getElementById('myModal'))
   myModal.show()
   
-  var myModalEl = document.getElementById('myModal')
-  myModalEl.addEventListener('hidden.bs.modal', function (event) {
+  // Modal Geolocation Allow Event
+  var allowGeolocationBtn = $('#allow');
+  var myModalEl = $('#myModal')
+  var closeGeolocationBtn = $('#close');
+  
+  myModalEl.on('hidden.bs.modal', function (event) {
     myModal.hide()
   });
+  
+  allowGeolocationBtn.on('click', function (event) {
+    // Check if the User allows finding location to get current weather
+    if(!navigator.geolocation) {
+      // Default Location
+      console.log('Geolocation is not supported by your browser.')
+  
+    } else {
+      // Use User's current location
+      navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
+    }
+  });
+
+  closeGeolocationBtn.on('click', function (event) {
+    myModal.hide();
+  })
 };
-
-// Modal Geolocation Allow Event
-const allowGeolocationBtn = $('#allow');
-
-allowGeolocationBtn.on('click', function (event) {
-  // Check if the User allows finding location to get current weather
-  if(!navigator.geolocation) {
-    // Default Location
-    console.log('Geolocation is not supported by your browser.')
-
-  } else {
-    // Use User's current location
-    navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
-  }
-});
 
 // Geolocation functions
 function geolocationSuccess(position) {
@@ -320,8 +322,8 @@ function geolocationSuccess(position) {
 }
 
 function geolocationError() {
-  cityContainer.text("Allow Geolocation for your location's current weather.")
   console.log('Unable to retrieve your location');
+  cityContainer.text("Allow Geolocation for your location's current weather.");
 }
 
 // Get existing search data on load
