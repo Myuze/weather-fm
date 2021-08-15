@@ -203,16 +203,16 @@ function getCoords(cityName) {
   }).then((data) => {
     console.log('getCoords: ', data);
     console.log(user)
-    user.lastCitySearched = data[0].name;
     
-    if (data.length < 1 || null == data) {
+    if (data.length < 1 || null == data || data[0].name == undefined) {
       console.log('City Not Found');
       // If not a valid city notify user
-      $('#city-input').attr('placeholder', 'Not a valid city');
-      setTimeout(() => $('#city-input').attr('placeholder', 'Enter City'), 2000);
+      cityInputEl.val("");
+      cityInputEl.attr('placeholder', 'Not a valid city');
+      setTimeout(() => cityInputEl.attr('placeholder', 'Enter City'), 2000);
       
     } else {
-      
+      user.lastCitySearched = data[0].name;
       user.lat = data[0].lat;
       user.lon = data[0].lon;
       if (!user.searchedCities.includes(user.lastCitySearched)) {
