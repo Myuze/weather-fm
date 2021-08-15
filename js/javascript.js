@@ -24,14 +24,14 @@ class User {
 function save(user) {
   // Save User city and saved searched cities to localStorage
   user.isNewUser = false;
-  console.log(user)
+  console.log(user, ' SAVED')
   localStorage.setItem('userWeather', JSON.stringify(user));
 }
 
 function load() {
   // Load User city and searched cities from localStorage
   let userData = JSON.parse(localStorage.getItem('userWeather'));
-  console.log(userData)
+  console.log(userData, ' LOADED')
   
   return userData;
 }
@@ -81,7 +81,6 @@ const openWeatherApi = {
 
 class CurrentWeather {
   constructor(data, name = 'default') {
-    console.log(data)
     this.name = name;
     this.date = data.current.dt;
     this.icon = data.current.weather[0].icon;
@@ -170,7 +169,6 @@ class ForecastCard {
 function fillCityCurrentContainerInfo(cityData) {
   cityContainer.empty();
   let currentCity = new CurrentWeather(cityData, user.lastCitySearched);
-  console.log('currentCity: ', currentCity)
   let cityCard = currentCity.fillCityCurrentContainerInfo()
   cityContainer.append(cityCard);
 }
@@ -220,9 +218,9 @@ function getCoords(cityName) {
       if (!user.searchedCities.includes(user.lastCitySearched)) {
         createCitySearchBtn(cityInputEl.val());
         user.searchedCities.push(user.lastCitySearched)
-        save(user);
       }
       
+      save(user);
       cityInputEl.val("");
       return oneCallRequest(user.lat, user.lon);
     }
@@ -254,7 +252,6 @@ function oneCallRequest(lat, lon) {
     console.log('oneCall: data', data)
     fillCityCurrentContainerInfo(data)
     fillForecastContainer(data);
-    console.log('oneCallRequest: before LS.set', user.lastCitySearched)
     
   }).catch((err) => {
     console.log(err);
@@ -278,6 +275,7 @@ searchBtnEl.on('click', function(event) {
   event.preventDefault();
   let cityInput = cityInputEl.val().trim();
   if (cityInput) {
+    user.lastCitySearched = cityInput;
     getCoords(cityInput); 
 
   } else {
