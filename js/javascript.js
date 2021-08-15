@@ -6,6 +6,7 @@ const searchColEl = $('#search-column');
 const cityInputEl = $('#city-input');
 const searchBtnEl = $('#search-btn');
 const cityBtnsEl = $('#city-btns');
+const cityContainer = $('#city-container');
 const forecastContainerEl = $('#forecast-container');
 
 // User
@@ -79,24 +80,55 @@ const openWeatherApi = {
   }
 }
 
-// City Container Elements
-const currentCityEl = $('#city-current-weather');
-const currentIconEl = $('#w-icon');
-const currentTempEl = $('#current-temp');
-const currentWindEl = $('#current-wind');
-const currentHumidityEl = $('#current-humidity');
-const currentUvindexEl = $('#current-uv-index');
-
 class CurrentWeather {
-  constructor(data) {
-    this.name = "",
-    this.date = data.dt,
-    this.icon = "",
-    this.temp = 0,
-    this.wind = 0,
-    this.humidity = 0,
-    this.uvi = 0,
-    this.uvi_color = ""
+  constructor(data, name = 'default') {
+    console.log(data)
+    this.name = name;
+    this.date = data.current.dt;
+    this.icon = data.current.weather[0].icon;
+    this.temp = data.current.temp;
+    this.wind = data.current.wind_speed;
+    this.humidity = data.current.humidity;
+    this.uvi = data.current.uvi;
+    this.uvi_color = this.getUviColor(this.uvi);
+  }
+
+  // Fill city container info
+  fillCityCurrentContainerInfo() {
+    let date = moment(this.date * 1000).format('MM/DD/YY');
+    let icon = `http://openweathermap.org/img/wn/${this.icon}@2x.png`
+    // Card Elements
+    let currentDiv = $('<div>').addClass('current-card-1 card m-2 border border-1 border-dark');
+    let currentDate = $('<h3>').addClass('current-date').text(`${this.name} ${date}`);
+    let currentIcon = $('<img>').addClass('current-weather-icon').attr({'src': icon, 'alt': 'Weather Icon'});
+    let currentTemp = $('<p>').addClass('current-temp').text(`Temp: ${this.temp}°F`);
+    let currentWind = $('<p>').addClass('current-wind').text(`Wind: ${this.wind} mph`);
+    let currentHumidity = $('<p>').addClass('current-humidity').text(`Humidity: ${this.humidity}%`);
+    let currentUvi = $('<p>').addClass('current-uvi').text(this.uvi).css({'background-color': `${this.uvi_color}`});
+    // Append Elements to Div
+    currentDiv.append(currentDate);
+    currentDiv.append(currentIcon);
+    currentDiv.append(currentTemp);
+    currentDiv.append(currentWind);
+    currentDiv.append(currentHumidity);
+    currentDiv.append(currentUvi);
+    
+    return currentDiv;
+  }
+
+  getUviColor(uvi) {
+    if (uvi < 2) {
+      return "green";
+      
+    } else if (uvi > 2 && uvi < 6) {
+      return "yellow";
+    
+    } else if (uvi > 6 && uvi < 8) {
+      return "orange";
+    
+    } else if (uvi > 7) {
+      return "red";
+    }
   }
 }
 
@@ -134,14 +166,11 @@ class ForecastCard {
 
 // Fill city container info
 function fillCityCurrentContainerInfo(cityData) {
-  let date = moment(cityData.current.dt * 1000).format('MM/DD/YY')
-  let icon = `http://openweathermap.org/img/wn/${cityData.current.weather[0].icon}@2x.png`
-  currentCityEl.text(user.lastCitySearched + ` (${date})`);
-  currentIconEl.attr({'src': icon, 'alt': 'Weather Icon'});
-  currentTempEl.text('Temp: ' + cityData.current.temp + '°F');
-  currentWindEl.text('Wind: ' + cityData.current.wind_speed + ' mph');
-  currentHumidityEl.text('Humidity: ' + cityData.current.humidity + '%');
-  currentUvindexEl.text('UV Index: ' + cityData.current.uvi);
+  cityContainer.empty();
+  let currentCity = new CurrentWeather(cityData, user.lastCitySearched);
+  console.log('currentCity: ', currentCity)
+  let cityCard = currentCity.fillCityCurrentContainerInfo()
+  cityContainer.append(cityCard);
 }
 
 // Fill Forecast Data
@@ -287,7 +316,6 @@ function geolocationSuccess(position) {
 
   var oneCallData = getCoords(user.lat, user.lon);
   console.log('oneCallData: ', oneCallData)
-
 }
 
 function geolocationError() {
