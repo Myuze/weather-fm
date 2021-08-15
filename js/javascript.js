@@ -284,44 +284,43 @@ searchBtnEl.on('click', function(event) {
 })
 
 // Modal Functions
-const currentBtn = $('#current-btn');
-
-currentBtn.on('click', function(event) {
+function verifyGeolocation() {
+  var myModal = new bootstrap.Modal(document.getElementById('myModal'))
+  myModal.show()
   
+  var myModalEl = document.getElementById('myModal')
+  myModalEl.addEventListener('hidden.bs.modal', function (event) {
+    myModal.hide()
+  });
+};
+
+// Modal Geolocation Allow Event
+const allowGeolocationBtn = $('#allow');
+
+allowGeolocationBtn.on('click', function (event) {
   // Check if the User allows finding location to get current weather
   if(!navigator.geolocation) {
     // Default Location
     console.log('Geolocation is not supported by your browser.')
+
   } else {
     // Use User's current location
     navigator.geolocation.getCurrentPosition(geolocationSuccess, geolocationError);
   }
-})
+});
 
 // Geolocation functions
 function geolocationSuccess(position) {
   user.lat = position.coords.latitude;
   user.lon = position.coords.longitude;
 
-  let request = new RequestType('oneCallRequest', 'data')
-  request.params.lat = user.lat;
-  request.params.lon = user.lon;
-  
-  var myModal = new bootstrap.Modal(document.getElementById('myModal'))
-  myModal.show()
-  
   $('#modal-txt').text(`Lat: ${user.lat}, Lon: ${user.lon}`)
 
-  var myModalEl = document.getElementById('myModal')
-  myModalEl.addEventListener('hidden.bs.modal', function (event) {
-    myModal.hide()
-  })
-
-  var oneCallData = getCoords(user.lat, user.lon);
-  console.log('oneCallData: ', oneCallData)
+  oneCallRequest(user.lat, user.lon);
 }
 
 function geolocationError() {
+  cityContainer.text("Allow Geolocation for your location's current weather.")
   console.log('Unable to retrieve your location');
 }
 
@@ -330,6 +329,8 @@ var user = load();
 console.log(user)
 if (null === user) {
   user = new User();
+  verifyGeolocation();
+
 } else {
 
   user.searchedCities.forEach(city => {

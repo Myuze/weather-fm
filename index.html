@@ -20,18 +20,19 @@
         <h1 class="m-0 pb-5 bg-primary">Weather Dashboard</h1>
     </header>
 
-    <!-- Geolocation Modal -->
+    <!-- Verify Geolocation Modal -->
     <div id="myModal" class="modal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Current Position</h5>
+            <h5 class="modal-title">Allow Geolocation</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <p id="modal-txt"></p>
+            <p id="modal-txt">Would you like to get current weather conditions for your location?</p>
           </div>
           <div class="modal-footer">
+            <button type="button" id="allow" class="btn btn-primary">Allow</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
@@ -45,7 +46,6 @@
                 <h3 class="m-0 pb-2 text-center">Search for a City:</h3>
                 <input id="city-input" class="m-0 mb-2" placeholder="Enter City">
                 <button id="search-btn" autofocus type="button" class="mb-2 btn btn-primary btn-lg">Search</button>
-                <button id="current-btn" type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#myModal">Current Location</button>
                 <hr>
                 <div id="city-btns" class="mt-2 list-group"></div>
             </div>
