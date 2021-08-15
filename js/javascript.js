@@ -31,7 +31,6 @@ function save(user) {
 function load() {
   // Load User city and searched cities from localStorage
   let userData = JSON.parse(localStorage.getItem('userWeather'));
-  localStorage.removeItem('userWeather')
   console.log(userData)
   
   return userData;
@@ -206,20 +205,27 @@ function getCoords(cityName) {
   }).then((data) => {
     console.log('getCoords: ', data);
     console.log(user)
+    user.lastCitySearched = data[0].name;
+    
     if (data.length < 1 || null == data) {
       console.log('City Not Found');
-      return data;
-
+      // If not a valid city notify user
+      $('#city-input').attr('placeholder', 'Not a valid city');
+      setTimeout(() => $('#city-input').attr('placeholder', 'Enter City'), 2000);
+      
     } else {
-
-      user.lastCitySearched = data[0].name;
-      console.log('user::Fetch: ', user.lastCitySearched)
+      
       user.lat = data[0].lat;
       user.lon = data[0].lon;
-
+      if (!user.searchedCities.includes(user.lastCitySearched)) {
+        createCitySearchBtn(cityInputEl.val());
+        user.searchedCities.push(user.lastCitySearched)
+        save(user);
+      }
+      
+      cityInputEl.val("");
       return oneCallRequest(user.lat, user.lon);
-    } 
-
+    }
   }).catch((err) => {
     console.log(err);
   });
@@ -263,7 +269,6 @@ cityBtnsEl.on('click', function(event) {
 
 function createCitySearchBtn(cityName) {
   let newListItem = $('<li>').addClass('list-group-item list-group-item-action text-center');
-  getCoords(cityName);
   newListItem.text(cityName);
   cityBtnsEl.prepend(newListItem);
 }
@@ -271,14 +276,15 @@ function createCitySearchBtn(cityName) {
 // Make OpenWeather API call when search button pressed
 searchBtnEl.on('click', function(event) {
   event.preventDefault();
-  let cityInput = cityInputEl.val().replace(/\s+/g, '');
-  
-  if (cityInput != null || cityInput != "" && user.searchedCities.includes(cityInput)) {
-    createCitySearchBtn(cityInputEl.val());
-    }
-    save(user);
-    cityInputEl.val("");
-})
+  let cityInput = cityInputEl.val().trim();
+  if (cityInput) {
+    getCoords(cityInput); 
+
+  } else {
+    cityInputEl.attr('placeholder', 'Enter a city first!')
+    setTimeout(() => cityInputEl.attr('placeholder', 'Enter City'), 2000);
+  }
+});
 
 // Modal Functions
 function verifyGeolocation() {
@@ -338,4 +344,5 @@ if (null === user) {
   user.searchedCities.forEach(city => {
     createCitySearchBtn(city);
   });
+  getCoords(user.lastCitySearched)
 }
