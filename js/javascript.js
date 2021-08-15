@@ -96,15 +96,18 @@ class CurrentWeather {
   // Fill city container info
   fillCityCurrentContainerInfo() {
     let date = moment(this.date * 1000).format('MM/DD/YY');
-    let icon = `http://openweathermap.org/img/wn/${this.icon}@2x.png`
+    let icon = `http://openweathermap.org/img/wn/${this.icon}@4x.png`
     // Card Elements
-    let currentDiv = $('<div>').addClass('current-card-1 card m-2 border border-1 border-dark');
+    let currentDiv = $('<div>').addClass('current-card-1 card m-2 p-2 border border-1 border-dark');
     let currentDate = $('<h3>').addClass('current-date').text(`${this.name} ${date}`);
-    let currentIcon = $('<img>').addClass('current-weather-icon').attr({'src': icon, 'alt': 'Weather Icon'});
+    let currentIcon = $('<img>').addClass('current-weather-icon').attr({'src': icon, 'alt': 'Weather Icon', 'width': '10%'});
     let currentTemp = $('<p>').addClass('current-temp').text(`Temp: ${this.temp}°F`);
     let currentWind = $('<p>').addClass('current-wind').text(`Wind: ${this.wind} mph`);
     let currentHumidity = $('<p>').addClass('current-humidity').text(`Humidity: ${this.humidity}%`);
-    let currentUvi = $('<p>').addClass('current-uvi').text(this.uvi).css({'background-color': `${this.uvi_color}`});
+    // Add Uvi with background color
+    let currentUvi = $('<p>').addClass('current-uvi').text('UV Index: ');
+    let currentUviSpan = $('<span>').text(this.uvi).css({'background-color': this.uvi_color, 'padding': '3px 10px', 'border-radius': '5px'});
+    currentUvi.append(currentUviSpan);
     // Append Elements to Div
     currentDiv.append(currentDate);
     currentDiv.append(currentIcon);
